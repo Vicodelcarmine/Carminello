@@ -1,101 +1,269 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Ruota degli Sconti</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ruota degli Sconti — Vico del Carmine</title>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      text-align: center; 
-      background: #f7f7f7; 
-      margin: 0; 
-      padding: 40px; 
+    :root{
+      --bg:#0f172a;        /* slate-900 */
+      --card:#111827;      /* gray-900 */
+      --accent:#f59e0b;    /* amber-500 */
+      --accent-2:#fbbf24;  /* amber-400 */
+      --text:#e5e7eb;      /* gray-200 */
+      --muted:#94a3b8;     /* slate-400 */
+      --ok:#22c55e;        /* green-500 */
+      --err:#ef4444;       /* red-500 */
     }
-    canvas { margin-top: 20px; }
-    #result { font-size: 24px; margin-top: 20px; font-weight: bold; }
-    button { 
-      padding: 10px 20px; 
-      font-size: 18px; 
-      margin-top: 20px; 
-      border-radius: 8px; 
-      border: none; 
-      background: #ff9800; 
-      color: white; 
-      cursor: pointer; 
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 70% -20%, #1f2937 0%, var(--bg) 60%);
+      color:var(--text);
+      min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    button:hover { background: #e68900; }
+    .app{width:100%; max-width:980px; display:grid; gap:24px; grid-template-columns: 1fr;}
+    @media (min-width: 900px){ .app{ grid-template-columns: 420px 1fr; align-items: start; } }
+
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    .title{ margin:0 0 4px; font-size:28px; letter-spacing: .2px; }
+    .subtitle{ margin:0 0 14px; color:var(--muted); font-size:14px }
+
+    label{ display:block; font-size:14px; margin:14px 0 6px; color:var(--muted) }
+    input[type="text"], input[type="email"]{ width:100%; padding:12px 14px; background:#0b1020; color:var(--text); border:1px solid rgba(255,255,255,.08); border-radius:12px; outline:none; }
+    input::placeholder{ color:#64748b }
+
+    .row{ display:flex; align-items:center; gap:10px; margin-top:12px }
+    .row a{ color: var(--accent-2); text-decoration: none }
+    .row a:hover{ text-decoration: underline }
+
+    .checkbox{ display:flex; gap:10px; align-items:flex-start; margin-top:12px; color:var(--muted); font-size:14px }
+    .checkbox input{ transform: translateY(2px) }
+
+    button{
+      margin-top:16px; padding:12px 16px; border:none; border-radius:12px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#1f2937; font-weight:700; cursor:pointer; width:100%; font-size:16px; box-shadow:0 8px 20px rgba(245,158,11,.35);
+    }
+    button[disabled]{ opacity:.55; cursor:not-allowed; box-shadow:none }
+
+    .status{ margin-top:12px; font-size:14px }
+    .ok{ color:var(--ok) }
+    .err{ color:var(--err) }
+
+    .wheelWrap{ position:relative; display:flex; align-items:center; justify-content:center; }
+    canvas{ max-width:100%; height:auto; display:block; }
+    .pointer{ position:absolute; top:-8px; width:0; height:0; border-left: 14px solid transparent; border-right:14px solid transparent; border-bottom:24px solid #fff; filter: drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+
+    #result{ font-size:24px; font-weight:800; text-align:center; margin-top:16px }
+    .note{ color:var(--muted); font-size:12px; margin-top:10px }
+    .footer{ text-align:center; color:var(--muted); font-size:12px; margin-top:14px }
+    .badge{ display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); font-size:12px; }
   </style>
 </head>
 <body>
-  <h1>🎉 Gira la Ruota degli Sconti! 🎉</h1>
-  <canvas id="ruota" width="400" height="400"></canvas>
-  <br>
-  <button onclick="gira()">Gira la Ruota</button>
-  <div id="result"></div>
+  <div class="app">
+    <!-- Form Card -->
+    <div class="card">
+      <h1 class="title">🎉 Ruota degli Sconti</h1>
+      <p class="subtitle">Per poter giocare: registra i tuoi dati e conferma di aver seguito la pagina Facebook <strong>Vico del Carmine</strong>. 1 registrazione = 1 sola giocata.</p>
+
+      <label for="nome">Nome e cognome</label>
+      <input id="nome" type="text" placeholder="Mario Rossi" autocomplete="name" />
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="mario@example.com" autocomplete="email" />
+
+      <div class="row">
+        <span class="badge">Step 1</span>
+        <a href="https://www.facebook.com/search/top?q=vico%20del%20carmine" target="_blank" rel="noopener">Apri la pagina Facebook "Vico del Carmine"</a>
+      </div>
+
+      <label class="checkbox">
+        <input id="fbcheck" type="checkbox" />
+        <span>Confermo di essermi registrato/di seguire la pagina Facebook <strong>Vico del Carmine</strong>.</span>
+      </label>
+
+      <button id="unlockBtn">Sblocca la Ruota</button>
+      <div id="status" class="status"></div>
+
+      <p class="note">Nota: sul web non è possibile <em>verificare automaticamente</em> il follow/registrazione Facebook senza un'app approvata da Facebook. Questo modulo si basa sulla tua conferma e limita una giocata per email.</p>
+      <p class="footer">Privacy: salviamo localmente solo un flag “hai già giocato” legato alla tua email (hash) per impedire più giocate dallo stesso dispositivo. (Vedi codice per abilitare una modalità con backend.)</p>
+    </div>
+
+    <!-- Wheel Card -->
+    <div class="card">
+      <div class="wheelWrap">
+        <div class="pointer"></div>
+        <canvas id="ruota" width="420" height="420" aria-label="Ruota degli sconti" role="img"></canvas>
+      </div>
+      <button id="spinBtn" disabled>Gira la Ruota</button>
+      <div id="result"></div>
+      <div class="note">Sconti disponibili: 20%–50%. Una sola giocata per registrazione.</div>
+    </div>
+  </div>
 
   <script>
-    const canvas = document.getElementById("ruota");
-    const ctx = canvas.getContext("2d");
+    // =============================
+    // Configurazione
+    // =============================
+    const SCONTI = ["20%","25%","30%","35%","40%","45%","50%"]; // probabilità uniformi
 
-    const sconti = ["20%", "25%", "30%", "35%", "40%", "45%", "50%"];
-    const numSettori = sconti.length;
+    // (Opzionale) Integrazione backend per blocco globale per email
+    // Puoi collegare Firebase/Apps Script e, dopo l'hash, inviare emailHash al server:
+    // - Se il server risponde "già usata", blocchi.
+    // - Se "nuova", permetti 1 giro e poi segni come usata.
+
+    // =============================
+    // Elementi UI
+    // =============================
+    const nomeEl = document.getElementById('nome');
+    const emailEl = document.getElementById('email');
+    const fbCheck = document.getElementById('fbcheck');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const statusEl = document.getElementById('status');
+
+    const spinBtn = document.getElementById('spinBtn');
+    const resultEl = document.getElementById('result');
+
+    const canvas = document.getElementById('ruota');
+    const ctx = canvas.getContext('2d');
+
+    const cx = canvas.width/2, cy = canvas.height/2, R = 200;
+    const numSettori = SCONTI.length;
     const angoloSettore = 2 * Math.PI / numSettori;
     let angoloAttuale = 0;
 
-    function disegnaRuota() {
-      for (let i = 0; i < numSettori; i++) {
+    function drawWheel(){
+      // sfondo
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+      for (let i=0;i<numSettori;i++){
+        const start = angoloSettore * i;
+        const end = start + angoloSettore;
         ctx.beginPath();
-        ctx.moveTo(200, 200);
-        ctx.arc(200, 200, 200, angoloSettore * i, angoloSettore * (i+1));
-        ctx.fillStyle = i % 2 === 0 ? "#ffcc80" : "#ffe0b2";
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,R,start,end);
+        // colori alternati
+        ctx.fillStyle = i%2 ? '#fde68a' : '#f59e0b';
         ctx.fill();
+
+        // testo
         ctx.save();
-        ctx.translate(200, 200);
-        ctx.rotate(angoloSettore * (i + 0.5));
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#333";
-        ctx.font = "20px Arial";
-        ctx.fillText(sconti[i], 180, 10);
+        ctx.translate(cx,cy);
+        ctx.rotate(start + angoloSettore/2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 20px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+        ctx.fillText(SCONTI[i], R-16, 8);
         ctx.restore();
       }
+      // cerchio centrale
+      ctx.beginPath();
+      ctx.arc(cx,cy,52,0,2*Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.font = 'bold 14px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillStyle = '#111827';
+      ctx.textAlign = 'center';
+      ctx.fillText('GIRA', cx, cy+5);
     }
 
-    disegnaRuota();
+    drawWheel();
 
-    function gira() {
-      const rotazione = Math.random() * 360 + 1800; // almeno 5 giri
-      const durata = 4000;
-      const inizio = performance.now();
+    function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
 
-      function animazione(t) {
-        const tempo = t - inizio;
-        const progresso = Math.min(tempo / durata, 1);
-        angoloAttuale = rotazione * easeOut(progresso);
-        ctx.clearRect(0,0,400,400);
-        ctx.save();
-        ctx.translate(200,200);
-        ctx.rotate(angoloAttuale * Math.PI / 180);
-        ctx.translate(-200,-200);
-        disegnaRuota();
-        ctx.restore();
-        if(progresso < 1) {
-          requestAnimationFrame(animazione);
-        } else {
-          mostraRisultato();
-        }
+    function sectorFromAngle(angleDeg){
+      const a = ((angleDeg % 360) + 360) % 360; // 0..359
+      const idx = Math.floor(numSettori - (a/360)*numSettori) % numSettori;
+      return idx;
+    }
+
+    async function sha256Hex(str){
+      const enc = new TextEncoder();
+      const buf = await crypto.subtle.digest('SHA-256', enc.encode(str.toLowerCase().trim()));
+      const bytes = Array.from(new Uint8Array(buf));
+      return bytes.map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function localKey(emailHash){ return `vico-carmine-played-${emailHash}`; }
+
+    unlockBtn.addEventListener('click', async () => {
+      statusEl.textContent = '';
+      resultEl.textContent = '';
+
+      const nome = nomeEl.value.trim();
+      const email = emailEl.value.trim();
+
+      if(!nome){ statusEl.innerHTML = '<span class="err">Inserisci il nome.</span>'; return; }
+      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        statusEl.innerHTML = '<span class="err">Inserisci un\'email valida.</span>'; return;
       }
-      requestAnimationFrame(animazione);
-    }
+      if(!fbCheck.checked){
+        statusEl.innerHTML = '<span class="err">Devi confermare la registrazione/il follow alla pagina Facebook.</span>';
+        return;
+      }
 
-    function easeOut(t) {
-      return 1 - Math.pow(1 - t, 3);
-    }
+      const emailHash = await sha256Hex(email);
 
-    function mostraRisultato() {
-      const gradiFinali = (angoloAttuale % 360 + 360) % 360;
-      const indice = Math.floor(numSettori - gradiFinali / 360 * numSettori) % numSettori;
-      document.getElementById("result").innerText = "Hai vinto uno sconto del " + sconti[indice] + "!";
-    }
+      // Controllo locale: ha già giocato su questo dispositivo?
+      if(localStorage.getItem(localKey(emailHash))){
+        statusEl.innerHTML = '<span class="err">Questa email ha già effettuato la giocata su questo dispositivo.</span>';
+        spinBtn.disabled = true;
+        return;
+      }
+
+      // Se avessi un backend, qui chiameresti un endpoint per verificare globalmente l\'email
+      // es: const res = await fetch('/check', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({emailHash})})
+      // if(res.status===409){ ...già usata... }
+
+      statusEl.innerHTML = '<span class="ok">✅ Registrazione ok. Puoi girare la ruota!</span>';
+      spinBtn.disabled = false;
+      spinBtn.focus();
+
+      // Salva dati minimi (facoltativo): potresti inviarli a un servizio esterno se previsto dalla privacy
+      sessionStorage.setItem('vico-data', JSON.stringify({nome, emailHash, ts: Date.now()}));
+    });
+
+    spinBtn.addEventListener('click', async () => {
+      spinBtn.disabled = true; // impedisci multi-click
+      resultEl.textContent = '';
+
+      const data = JSON.parse(sessionStorage.getItem('vico-data') || '{}');
+      if(!data.emailHash){
+        statusEl.innerHTML = '<span class="err">Prima compila il modulo e sblocca la ruota.</span>';
+        return;
+      }
+
+      const rotazione = (Math.random()*360) + 1800; // 5+ giri
+      const durata = 4200;
+      const start = performance.now();
+
+      function anim(t){
+        const p = Math.min((t-start)/durata, 1);
+        angoloAttuale = rotazione * easeOutCubic(p);
+        ctx.save();
+        ctx.translate(cx,cy);
+        ctx.rotate(angoloAttuale * Math.PI/180);
+        ctx.translate(-cx,-cy);
+        drawWheel();
+        ctx.restore();
+        if(p<1){ requestAnimationFrame(anim); } else { fine(); }
+      }
+
+      requestAnimationFrame(anim);
+
+      function fine(){
+        const finale = ((angoloAttuale % 360) + 360) % 360;
+        const idx = sectorFromAngle(finale);
+        const premio = SCONTI[idx];
+        resultEl.textContent = `Hai vinto uno sconto del ${premio}!`;
+
+        // segna come usata (locale)
+        const emailHash = data.emailHash;
+        localStorage.setItem(localKey(emailHash), JSON.stringify({ premio, at: Date.now() }));
+
+        // (Opzionale) invia al backend la conferma di utilizzo
+        // fetch('/mark-used', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({emailHash, premio})})
+      }
+    });
   </script>
 </body>
 </html>
