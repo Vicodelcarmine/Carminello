@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruota degli Sconti</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      background: #f7f7f7; 
+      margin: 0; 
+      padding: 40px; 
+    }
+    canvas { margin-top: 20px; }
+    #result { font-size: 24px; margin-top: 20px; font-weight: bold; }
+    button { 
+      padding: 10px 20px; 
+      font-size: 18px; 
+      margin-top: 20px; 
+      border-radius: 8px; 
+      border: none; 
+      background: #ff9800; 
+      color: white; 
+      cursor: pointer; 
+    }
+    button:hover { background: #e68900; }
+  </style>
+</head>
+<body>
+  <h1>🎉 Gira la Ruota degli Sconti! 🎉</h1>
+  <canvas id="ruota" width="400" height="400"></canvas>
+  <br>
+  <button onclick="gira()">Gira la Ruota</button>
+  <div id="result"></div>
+
+  <script>
+    const canvas = document.getElementById("ruota");
+    const ctx = canvas.getContext("2d");
+
+    const sconti = ["20%", "25%", "30%", "35%", "40%", "45%", "50%"];
+    const numSettori = sconti.length;
+    const angoloSettore = 2 * Math.PI / numSettori;
+    let angoloAttuale = 0;
+
+    function disegnaRuota() {
+      for (let i = 0; i < numSettori; i++) {
+        ctx.beginPath();
+        ctx.moveTo(200, 200);
+        ctx.arc(200, 200, 200, angoloSettore * i, angoloSettore * (i+1));
+        ctx.fillStyle = i % 2 === 0 ? "#ffcc80" : "#ffe0b2";
+        ctx.fill();
+        ctx.save();
+        ctx.translate(200, 200);
+        ctx.rotate(angoloSettore * (i + 0.5));
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#333";
+        ctx.font = "20px Arial";
+        ctx.fillText(sconti[i], 180, 10);
+        ctx.restore();
+      }
+    }
+
+    disegnaRuota();
+
+    function gira() {
+      const rotazione = Math.random() * 360 + 1800; // almeno 5 giri
+      const durata = 4000;
+      const inizio = performance.now();
+
+      function animazione(t) {
+        const tempo = t - inizio;
+        const progresso = Math.min(tempo / durata, 1);
+        angoloAttuale = rotazione * easeOut(progresso);
+        ctx.clearRect(0,0,400,400);
+        ctx.save();
+        ctx.translate(200,200);
+        ctx.rotate(angoloAttuale * Math.PI / 180);
+        ctx.translate(-200,-200);
+        disegnaRuota();
+        ctx.restore();
+        if(progresso < 1) {
+          requestAnimationFrame(animazione);
+        } else {
+          mostraRisultato();
+        }
+      }
+      requestAnimationFrame(animazione);
+    }
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function mostraRisultato() {
+      const gradiFinali = (angoloAttuale % 360 + 360) % 360;
+      const indice = Math.floor(numSettori - gradiFinali / 360 * numSettori) % numSettori;
+      document.getElementById("result").innerText = "Hai vinto uno sconto del " + sconti[indice] + "!";
+    }
+  </script>
+</body>
+</html>
